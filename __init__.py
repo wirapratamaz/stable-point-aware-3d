@@ -90,11 +90,11 @@ class SPAR3DSampler:
             "target_type": (["none", "vertex", "face"],),
             "target_count": (
                 "INT",
-                {"default": 1000, "min": 3, "max": 20000, "step": 1},
+                {"default": 1000, "min": 100, "max": 20000, "step": 1},
             ),
             "guidance_scale": (
                 "FLOAT",
-                {"default": 3.0, "min": 1.0, "max": 5.0, "step": 0.05},
+                {"default": 3.0, "min": 1.0, "max": 10.0, "step": 0.05},
             ),
             "seed": (
                 "INT",
