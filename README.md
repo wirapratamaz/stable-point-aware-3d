@@ -26,6 +26,7 @@ SPAR3D is based on [Stable Fast 3D](https://github.com/Stability-AI/stable-fast-
 Ensure your environment is:
 - Python >= 3.8 (Depending on PyTorch version >3.9)
 - Optional: CUDA has to be available
+- For Windows **(experimental)**: Visual Studio 2022
 - Has PyTorch installed according to your platform: https://pytorch.org/get-started/locally/ [Make sure the Pytorch CUDA version matches your system's.]
 - Update setuptools by `pip install -U setuptools==69.5.1`
 - Install wheel by `pip install wheel`
@@ -45,6 +46,13 @@ Our model is gated at [Hugging Face](https://huggingface.co):
 ### Low VRAM Mode
 
 To run SPAR3D with low VRAM mode, set the environment variable `SPAR3D_LOW_VRAM=1`. By default, SPAR3D consumes 10.5GB of VRAM. This mode will reduce the VRAM consumption to roughly 7GB but in exchange the model will be slower. The `run.py` script also supports the `--low-vram-mode` flag.
+
+### Windows Support **(experimental)**
+
+To run Stable Fast 3D on Windows, you must install Visual Studio (currently tested on VS 2022) and the appropriate PyTorch and CUDA versions.
+Then, follow the installation steps as mentioned above.
+
+Note that Windows support is **experimental** and not guaranteed to give the same performance and/or quality as Linux.
 
 ### CPU Support
 
