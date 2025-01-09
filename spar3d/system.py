@@ -404,7 +404,8 @@ class SPAR3D(BaseModule):
         self.pdiff_backbone = None
         self.diffusion_spaced = None
         self.sampler = None
-        torch.cuda.empty_cache()
+        if get_device() == "cuda":
+            torch.cuda.empty_cache()
 
     def _unload_main_modules(self):
         """Unload main processing modules to free memory"""
@@ -414,13 +415,15 @@ class SPAR3D(BaseModule):
         self.camera_embedder = None
         self.backbone = None
         self.post_processor = None
-        torch.cuda.empty_cache()
+        if get_device() == "cuda":
+            torch.cuda.empty_cache()
 
     def _unload_estimator_modules(self):
         """Unload estimator modules to free memory"""
         self.image_estimator = None
         self.global_estimator = None
-        torch.cuda.empty_cache()
+        if get_device() == "cuda":
+            torch.cuda.empty_cache()
 
     def triplane_to_meshes(
         self, triplanes: Float[Tensor, "B 3 Cp Hp Wp"]
@@ -663,17 +666,19 @@ class SPAR3D(BaseModule):
             batch["mask_cond"], self.cfg.cond_image_size
         )
 
+        device = get_device()
+
         batch_size = batch["rgb_cond"].shape[0]
 
         if pointcloud is not None:
             if isinstance(pointcloud, list):
-                cond_tensor = torch.tensor(pointcloud).float().cuda().view(-1, 6)
+                cond_tensor = torch.tensor(pointcloud).float().to(device).view(-1, 6)
                 xyz = cond_tensor[:, :3]
                 color_rgb = cond_tensor[:, 3:]
             # Check if point cloud is a numpy array
             elif isinstance(pointcloud, np.ndarray):
-                xyz = torch.tensor(pointcloud[:, :3]).float().cuda()
-                color_rgb = torch.tensor(pointcloud[:, 3:]).float().cuda()
+                xyz = torch.tensor(pointcloud[:, :3]).float().to(device)
+                color_rgb = torch.tensor(pointcloud[:, 3:]).float().to(device)
             else:
                 raise ValueError("Invalid point cloud type")
 

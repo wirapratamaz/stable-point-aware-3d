@@ -29,6 +29,8 @@ from typing import Any, Dict, Iterable, Optional, Sequence, Union
 import numpy as np
 import torch as th
 
+from spar3d.utils import get_device
+
 
 def sigmoid_schedule(t, start=-3, end=3, tau=0.6, clip_min=1e-9):
     def sigmoid(x):
@@ -169,7 +171,10 @@ def space_timesteps(num_timesteps, section_counts):
 
 def _extract_into_tensor(arr, timesteps, broadcast_shape):
     """Extract values from a 1-D numpy array for a batch of indices."""
-    res = th.from_numpy(arr).to(device=timesteps.device)[timesteps].float()
+    if get_device() == "mps":
+        res = th.from_numpy(arr.astype(np.float32)).to(device=timesteps.device)[timesteps]
+    else:
+        res = th.from_numpy(arr).to(device=timesteps.device)[timesteps].float()
     while len(res.shape) < len(broadcast_shape):
         res = res[..., None]
     return res + th.zeros(broadcast_shape, device=timesteps.device)
