@@ -29,7 +29,8 @@ def get_extensions():
         ]
         + ["-march=native"]
         if use_native_arch
-        else [],
+        else []
+        + ["-mmacosx-version-min=10.15"] if is_mac else [],
     }
     if debug_mode:
         extra_compile_args["cxx"].append("-g")

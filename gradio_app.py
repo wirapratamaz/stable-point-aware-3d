@@ -83,7 +83,7 @@ def forward_model(
     system,
     guidance_scale=3.0,
     seed=0,
-    device="cuda",
+    device=device,
     remesh_option="none",
     vertex_count=-1,
     texture_resolution=1024,
@@ -155,16 +155,16 @@ def run_model(
             if pc_cond is not None:
                 # Check if pc_cond is a list
                 if isinstance(pc_cond, list):
-                    cond_tensor = torch.tensor(pc_cond).float().cuda().view(-1, 6)
+                    cond_tensor = torch.tensor(pc_cond).float().to(device).view(-1, 6)
                     xyz = cond_tensor[:, :3]
                     color_rgb = cond_tensor[:, 3:]
                 elif isinstance(pc_cond, dict):
-                    xyz = torch.tensor(pc_cond["positions"]).float().cuda()
-                    color_rgb = torch.tensor(pc_cond["colors"]).float().cuda()
+                    xyz = torch.tensor(pc_cond["positions"]).float().to(device)
+                    color_rgb = torch.tensor(pc_cond["colors"]).float().to(device)
                 else:
-                    xyz = torch.tensor(pc_cond.vertices).float().cuda()
+                    xyz = torch.tensor(pc_cond.vertices).float().to(device)
                     color_rgb = (
-                        torch.tensor(pc_cond.colors[:, :3]).float().cuda() / 255.0
+                        torch.tensor(pc_cond.colors[:, :3]).float().to(device) / 255.0
                     )
                 model_batch["pc_cond"] = torch.cat([xyz, color_rgb], dim=-1).unsqueeze(
                     0
@@ -195,7 +195,7 @@ def run_model(
                 model,
                 guidance_scale=guidance_scale,
                 seed=random_seed,
-                device="cuda",
+                device=device,
                 remesh_option=remesh_option.lower(),
                 vertex_count=vertex_count,
                 texture_resolution=texture_resolution,

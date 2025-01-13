@@ -11,6 +11,7 @@ from torchvision.transforms import Normalize
 
 from spar3d.models.network import get_activation
 from spar3d.models.utils import BaseModule
+from spar3d.utils import get_device
 
 OPENAI_DATASET_MEAN = (0.48145466, 0.4578275, 0.40821073)
 OPENAI_DATASET_STD = (0.26862954, 0.26130258, 0.27577711)
@@ -120,8 +121,12 @@ class ClipBasedHeadEstimator(BaseModule):
             mean=OPENAI_DATASET_MEAN,
             std=OPENAI_DATASET_STD,
         )(cond_image)
-        mask = Normalize(0.5, 0.26)(mask).half()
-        image_features = self.model.visual(cond_image.half(), mask).float()
+        if get_device() != "mps":
+            mask = Normalize(0.5, 0.26)(mask).half()
+            image_features = self.model.visual(cond_image.half(), mask).float()
+        else:
+            mask = Normalize(0.5, 0.26)(mask)
+            image_features = self.model.visual(cond_image, mask)
 
         # Run the heads
         outputs = {}
