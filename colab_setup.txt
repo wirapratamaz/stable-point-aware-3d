@@ -1,0 +1,110 @@
+# Stable Point-Aware 3D (SPAR3D) - Google Colab Setup
+
+# Check if GPU is available
+!nvidia-smi
+
+# Clone the repository
+!git clone https://github.com/Stability-AI/stable-point-aware-3d
+%cd stable-point-aware-3d
+
+# Update setuptools and install wheel
+!pip install -U setuptools==69.5.1
+!pip install wheel
+
+# Install PyTorch (adjust version as needed based on CUDA compatibility)
+# Uncomment the appropriate line for your CUDA version
+# !pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorch.org/whl/cu118
+# !pip install torch==2.0.1 torchvision==0.15.2 --index-url https://download.pytorch.org/whl/cu117
+
+# Install main requirements
+!pip install -r requirements.txt
+
+# Install demo requirements
+!pip install -r requirements-demo.txt
+
+# Optional: Install remeshing requirements (uncomment if needed)
+# !pip install -r requirements-remesh.txt
+
+# Install huggingface_hub for authentication
+!pip install huggingface_hub
+
+# Authenticate with Hugging Face
+from huggingface_hub import login
+from getpass import getpass
+
+# Get token from user input (will be hidden)
+print("You need to create a Hugging Face token at: https://huggingface.co/settings/tokens")
+print("Make sure you have requested access to: https://huggingface.co/stabilityai/stable-point-aware-3d")
+hf_token = getpass("Enter your Hugging Face token: ")
+login(token=hf_token)
+
+# Set environment variables for low VRAM if needed (uncomment if you have VRAM issues)
+# import os
+# os.environ["SPAR3D_LOW_VRAM"] = "1"
+
+# Create output directory
+!mkdir -p output
+
+# Run inference on sample image
+print("Running inference on sample image...")
+!python run.py demo_files/examples/fish.png --output-dir output/
+
+# Create uploads directory for your own images
+!mkdir -p uploads
+
+# Upload your own image
+from google.colab import files
+import os
+
+# Function to upload and process your own image
+def upload_and_process():
+  print("Please upload an image...")
+  uploaded = files.upload()
+  
+  if not uploaded:
+    print("No file was uploaded.")
+    return
+    
+  # Get the filename of the uploaded image
+  filename = list(uploaded.keys())[0]
+  filepath = os.path.join('uploads', filename)
+  
+  # Move the uploaded file to the uploads directory
+  !mv "{filename}" "{filepath}"
+  
+  print(f"Uploaded image saved to {filepath}")
+  
+  # Process the uploaded image
+  print(f"Processing {filepath}...")
+  !python run.py "{filepath}" --output-dir output/
+  
+  # List the output files
+  print("Generated files:")
+  !ls -la output/
+  
+  # Download the generated GLB file
+  from google.colab import files
+  import glob
+  
+  # Find all GLB files in the output directory
+  glb_files = glob.glob('output/*.glb')
+  
+  if glb_files:
+    for glb_file in glb_files:
+      files.download(glb_file)
+      print(f"Downloading {glb_file}")
+  else:
+    print("No GLB files found in the output directory.")
+
+# Uncomment to upload and process your own image
+# upload_and_process()
+
+# Run with different parameters (uncomment and modify as needed)
+# !python run.py demo_files/examples/fish.png \
+#     --output-dir output/ \
+#     --texture-resolution 1024 \
+#     --remesh-option quad
+
+# Run the Gradio demo with public URL
+print("Starting Gradio demo with public URL...")
+!python gradio_app.py --share

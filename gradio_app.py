@@ -2,6 +2,7 @@ import os
 import random
 import tempfile
 import time
+import argparse
 import zipfile
 from contextlib import nullcontext
 from functools import lru_cache
@@ -871,4 +872,35 @@ with gr.Blocks() as demo:
         ],
     )
 
-demo.queue().launch(share=False)
+    if __name__ == '__main__':
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--username', type=str, default=None, help='Username for authentication')
+        parser.add_argument('--password', type=str, default=None, help='Password for authentication')
+        parser.add_argument('--port', type=int, default=7860, help='Port to run the server listener on')
+        parser.add_argument("--listen", action='store_true', help="launch gradio with 0.0.0.0 as server name")
+        parser.add_argument("--share", action='store_true', help="make the UI accessible through gradio.live")
+        parser.add_argument("--queuesize", type=int, default=1, help="launch gradio queue max_size")
+        
+        args = parser.parse_args()
+        
+        # Configure queue before launch
+        demo.queue(max_size=args.queuesize)
+        
+        # Prepare auth tuple
+        auth = None
+        if args.username and args.password:
+            auth = (args.username, args.password)
+        
+        # Launch with simplified parameters
+        try:
+            demo.launch(
+                server_port=args.port,
+                server_name="0.0.0.0" if args.listen else None,
+                share=args.share,
+                auth=auth,
+                debug=True  # Add debug mode to see more detailed errors
+            )
+        except Exception as e:
+            print(f"Failed to launch interface: {str(e)}")
+            # Fallback to basic launch if custom configuration fails
+            demo.launch()
